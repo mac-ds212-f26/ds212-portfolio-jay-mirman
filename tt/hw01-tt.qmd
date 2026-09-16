@@ -1,0 +1,89 @@
+---
+title: "Homework 01"
+---
+
+
+## TidyTuesday Part
+
+Explore the week's [TidyTuesday](https://github.com/rfordatascience/tidytuesday) challenge. Develop a research question, then answer it through a short data story mainly composed of [effective visualizations](https://docs.google.com/presentation/d/1WHr6Itzm2IJLxvppcacxHpr8R4NxO4MfvWWUPmtQx6Q/preview?slide=id.g13360dab5d5_0_61).  Provide sufficient background for readers to grasp your narrative.  Refer to the Homework Instructions ⭐ page on the course website for details on how to submit this part.
+
+
+## Background & Research Question
+
+In this homework we explored John Hoffman's cappuccino index. The index consists of information relating to how long a cafe barista would need to work to consume one of the small cappuccinos they create.
+
+I aim to use this dataset to determine the relationship between a locations's urbanness, and the country's cappuccino index.
+
+## Data loading
+
+Load the data 
+
+```{r}
+# Using R
+# Option 1: tidytuesdayR R package 
+## install.packages("tidytuesdayR")
+
+library(tidytuesdayR)
+library(tidyverse)
+library(tidymodels)
+
+cafe <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2026/2026-09-08/cafe.csv')
+cappuccino_index <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2026/2026-09-08/cappuccino_index.csv')
+
+# With either option, replace the non-breaking spaces in `country`
+
+cafe$country <- gsub("\u00a0", " ", cafe$country)
+cappuccino_index$country <- gsub("\u00a0", " ", cappuccino_index$country)
+```
+
+## Part 1 - Cappuccino Price versus Urbanness
+
+```{r}
+cafe <- cafe |>
+  mutate(location = case_when(
+    urban == TRUE ~ "Urban",
+    suburban == TRUE ~ "Suburban",
+    rural == TRUE ~ "Rural"
+  ))
+
+ggplot(cafe, aes(x = location, y = price_gbp)) +
+  geom_boxplot() +
+  labs(title = "Cappuccino Price versus Urbaness", x = "Urbaness", y = "Cappuccino Price", caption = "Source: TidyTuesday"
+  ) + 
+  theme_classic()
+```
+
+While the three different levels of urbaness each have a similar median price, it appears that the more urban a location is, the more common it is to cost more. This can be seen by the "Urban" locations having a higher IQR, along with more outliers compared to both Suburban and Rural.
+
+## Plot 2 - 
+
+```{r}
+cafe_joined <- cafe |> 
+  inner_join(cappuccino_index, by = "country") |> 
+  filter(!is.na(location)) #\
+
+ggplot(cafe_joined, aes(x = location, y = index, fill = location)) +
+  geom_jitter(width = 0.05, alpha = 0.3) +
+  labs(
+    title = "Country Cappuccino Index verus Cafe Urbaness",
+    x = "Urbanness",
+    y = "Cappuccino Index",
+    caption = "Source: TidyTuesday"
+  ) +
+  theme_classic() +
+  geom_boxplot(outlier.shape = NA) +
+
+  theme(legend.position = "none")
+
+```
+
+From this information, it appears that the more urban a location is, the higher the countrie's cappuccino index tends to be. While there exists some Rural locations that have a Cappuccino index above 50, it is clear that the 3rd Quartile of Urban locations is far higher than either Rural or Suburban, and there exists far more locations in a country with a Cappuccino Index above 50.
+
+## Research Reflection
+
+While the median Cappuccino Index appears relatively unchanged by Urbanness, it is apparant that the higher end of Cappuccino Index is reflected far higher by more urban locations.
+
+
+
+
+
